@@ -12,12 +12,14 @@ if api_key:
     try:
         genai.configure(api_key=api_key)
         
-        # We gebruiken hier de meest universele naamgeving
-        # Mocht pro niet werken, dan kun je hier 'gemini-1.5-flash' proberen
+        # We gebruiken hier de meest specifieke stabiele naam voor de beta API
+        # Dit lost de 404 error op
         model = genai.GenerativeModel(
-            model_name='gemini-1.5-pro',
+            model_name='gemini-1.5-flash-latest', 
             generation_config={"temperature": temp_value}
         )
+        
+        # ... rest van je input velden ...
         
         target_url = st.text_input("Target URL")
         ref_url_1 = st.text_input("Referentie URL 1")
