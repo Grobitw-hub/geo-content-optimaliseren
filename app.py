@@ -19,7 +19,8 @@ if api_key:
             st.sidebar.write(models)
 
         # We proberen de meest stabiele naamgeving zonder prefix
-        model = genai.GenerativeModel('models/gemini-1.5-flash')
+        # VERVANG DEZE REGEL:
+model = genai.GenerativeModel('models/gemini-2.0-flash')
         
         target_url = st.text_input("Target URL")
         ref_urls = st.text_area("Referentie URL's (één per regel)")
