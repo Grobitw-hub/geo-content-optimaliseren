@@ -1,6 +1,5 @@
 import streamlit as st
 import google.generativeai as genai
-from google.api_core import exceptions
 
 # Pagina instellingen
 st.set_page_config(page_title="GEO Content Optimizer", page_icon="🚀", layout="wide")
@@ -13,18 +12,18 @@ temp_value = st.sidebar.slider("Creativiteit", 0.0, 1.0, 0.7, 0.1)
 
 if api_key:
     try:
-        # We forceren de stabiele REST connectie
+        # Configuratie
         genai.configure(api_key=api_key, transport='rest')
         
-        # OPLOSSING: We gebruiken 'gemini-flash-latest'.
-        # Deze stond op plek #16 in jouw debug-lijst en werkt met de klassieke toolnaam.
+        # OPLOSSING: We luisteren naar de foutmelding.
+        # 1. We pakken Gemini 2.0 Flash (je betaalde key kan dit aan).
+        # 2. We gebruiken 'google_search' in plaats van '_retrieval'.
         model = genai.GenerativeModel(
-            model_name='models/gemini-flash-latest',
-            tools=[{'google_search_retrieval': {}}], 
+            model_name='models/gemini-2.0-flash',
+            tools=[{'google_search': {}}], 
             generation_config={"temperature": temp_value}
         )
         
-        # Input velden
         col1, col2 = st.columns(2)
         with col1:
             target_url = st.text_input("Target URL (Het te verbeteren artikel)")
@@ -32,46 +31,39 @@ if api_key:
         with col2:
             ref_urls = st.text_area("Referentie URL's (Tone of Voice)")
 
-        # Start knop
         if st.button("Start GEO-Optimalisatie", use_container_width=True):
             if target_url and ref_urls:
-                with st.spinner('De AI analyseert de content en zoekt online...'):
+                with st.spinner('Bezig met analyseren en herschrijven...'):
                     try:
                         prompt = f"""
                         JE BENT EEN SENIOR GEO SPECIALIST.
-                        Herschrijf dit artikel voor Generative Engine Optimization: {target_url}
+                        Optimaliseer dit artikel voor AI-zoekmachines (GEO): {target_url}
                         
-                        BRONNEN & INPUT:
+                        INPUT:
                         - Tone of Voice inspiratie: {ref_urls}
-                        - Belangrijke keywords: {keywords}
+                        - Keywords: {keywords}
                         
-                        STRUCTUUR EISEN:
-                        1. H1 Titel: Pakkend en relevant.
-                        2. 'Kernvragen' sectie: Direct na de intro 3 Q&A's.
-                        3. Body: Duidelijke H2's en H3's.
-                        4. Entity-Rich: Verwerk feiten en namen in de eerste 50 woorden na elke kop.
-                        5. Opmaak: Korte alinea's, gebruik bulletpoints.
-                        6. Footer: Feitentabel en licentie.
+                        EISEN:
+                        1. Eén H1, gevolgd door een 'Kernvragen' Q&A sectie (3 vragen).
+                        2. Gebruik H2/H3 met informatiedichte eerste alinea's (entiteiten).
+                        3. Korte alinea's, heldere structuur.
+                        4. Sluit af met een feitentabel en licentie.
                         
-                        Output formaat: Markdown.
+                        Output: Markdown.
                         """
                         
                         response = model.generate_content(prompt)
-                        
                         st.markdown("---")
                         st.subheader("Resultaat")
                         st.markdown(response.text)
                         st.download_button("Download Markdown", response.text, "geo-artikel.md")
 
                     except Exception as e:
-                        # Vang eventuele specifieke fouten netjes op
-                        st.error(f"Fout tijdens genereren: {e}")
-                        if "404" in str(e):
-                             st.warning("Model niet gevonden? Check je API key rechten.")
-                        if "tool" in str(e).lower():
-                             st.warning("Tool fout: De zoekfunctie gaf een conflict.")
+                        # Hier vangen we specifieke fouten op
+                        st.error(f"Foutmelding: {e}")
+                        st.info("Als je 'Unknown field' ziet, moet je de requirements.txt updaten.")
             else:
-                st.warning("Vul minimaal de Target URL en Referentie URL's in.")
+                st.warning("Vul alle velden in.")
                 
     except Exception as e:
         st.error(f"Configuratie fout: {e}")
