@@ -8,12 +8,16 @@ st.sidebar.header("Instellingen")
 api_key = st.sidebar.text_input("Gemini API Key", type="password")
 temp_value = st.sidebar.slider("Creativiteit (Temperatuur)", 0.0, 1.0, 0.7, 0.1)
 
+# VERVANG DIT BLOK IN JE app.py:
 if api_key:
     try:
-        genai.configure(api_key=api_key)
+        # We dwingen de configuratie om de stabiele v1 API te gebruiken
+        genai.configure(api_key=api_key, transport='rest')
         
-        # We gebruiken hier de meest veilige naam die in elke regio werkt
+        # We gebruiken de meest basale modelnaam
         model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        # ... rest van je code (Target URL, etc.)
         
         target_url = st.text_input("Target URL")
         ref_urls = st.text_area("Referentie URL's (één per regel)")
