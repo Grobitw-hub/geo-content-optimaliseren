@@ -8,16 +8,18 @@ st.sidebar.header("Instellingen")
 api_key = st.sidebar.text_input("Gemini API Key", type="password")
 temp_value = st.sidebar.slider("Creativiteit (Temperatuur)", 0.0, 1.0, 0.7, 0.1)
 
-# VERVANG DIT BLOK IN JE app.py:
 if api_key:
     try:
-        # We dwingen de configuratie om de stabiele v1 API te gebruiken
+        # We forceren hier ALLES: de API versie en de transport methode
         genai.configure(api_key=api_key, transport='rest')
         
-        # We gebruiken de meest basale modelnaam
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        
-        # ... rest van je code (Target URL, etc.)
+        # DEBUG: Laat zien welke modellen beschikbaar zijn voor deze key
+        if st.sidebar.checkbox("Toon beschikbare modellen (Debug)"):
+            models = [m.name for m in genai.list_models()]
+            st.sidebar.write(models)
+
+        # We proberen de meest stabiele naamgeving zonder prefix
+        model = genai.GenerativeModel('models/gemini-1.5-flash')
         
         target_url = st.text_input("Target URL")
         ref_urls = st.text_area("Referentie URL's (één per regel)")
@@ -26,30 +28,16 @@ if api_key:
         if st.button("Start GEO-Optimalisatie"):
             if target_url:
                 with st.spinner('Bezig met genereren...'):
-                    # We maken de prompt expliciet zodat de AI weet wat hij moet doen
-                    # ook zonder de 'search' tool die de 404's kan veroorzaken.
-                    prompt = f"""
-                    Herschrijf de content van de volgende pagina voor GEO (Generative Engine Optimization): {target_url}
-                    
-                    GEBRUIK DEZE RICHTLIJNEN:
-                    1. Tone of Voice gebaseerd op: {ref_urls}
-                    2. Focus op keywords: {keywords}
-                    3. Structuur: H1 -> Kernvragen Q&A -> H2/H3.
-                    4. Entity-dense openings (40-50 woorden) na elke heading.
-                    5. Korte alinea's en front-loading van informatie.
-                    6. Tabel met feiten aan het eind + CC-BY licentie.
-                    
-                    Output in Markdown format.
-                    """
+                    # Simpele prompt om verbinding te testen
+                    prompt = f"Optimaliseer deze pagina voor GEO: {target_url}. Gebruik ToV: {ref_urls}. Focus op: {keywords}."
                     
                     response = model.generate_content(prompt)
                     st.markdown("---")
                     st.markdown(response.text)
-                    st.download_button("Download resultaat", response.text, file_name="geo-artikel.md")
             else:
                 st.warning("Voer een Target URL in.")
                 
     except Exception as e:
         st.error(f"Configuratie fout: {e}")
 else:
-    st.info("Voer je Gemini API Key in de zijbalk in.")
+    st.info("Voer je Gemini API Key in.")
