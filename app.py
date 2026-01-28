@@ -21,7 +21,7 @@ if api_key:
     try:
         model = genai.GenerativeModel(
             model_name='models/gemini-1.5-pro-002', # Specifieke stabiele versie
-            tools=[{'google_search_retrieval': {}}],
+          
             generation_config={"temperature": temp_value}
         )
     except Exception as e:
