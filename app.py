@@ -12,14 +12,21 @@ st.sidebar.header("Instellingen")
 api_key = st.sidebar.text_input("Gemini API Key", type="password")
 temp_value = st.sidebar.slider("Creativiteit (Temperatuur)", 0.0, 2.0, 0.7, 0.1)
 
+# VERVANG DIT STUKJE IN JE CODE:
 if api_key:
     genai.configure(api_key=api_key)
-    # Hier activeren we Gemini 1.5 Pro met de zoek-tool
-    model = genai.GenerativeModel(
-        model_name='gemini-1.5-pro',
-        tools=[{'google_search_retrieval': {}}],
-        generation_config={"temperature": temp_value}
-    )
+    
+    # We gebruiken 'gemini-1.5-flash' voor snelheid of 'gemini-1.5-pro' voor diepgang.
+    # We voegen de tool toe op de officieel ondersteunde manier voor v1beta.
+    try:
+        model = genai.GenerativeModel(
+            model_name='models/gemini-1.5-pro-002', # Specifieke stabiele versie
+            tools=[{'google_search_retrieval': {}}],
+            generation_config={"temperature": temp_value}
+        )
+    except Exception as e:
+        st.error(f"Er is een fout bij het laden van het model: {e}")
+    
 
     # Input velden
     target_url = st.text_input("Target URL (Te optimaliseren artikel)")
